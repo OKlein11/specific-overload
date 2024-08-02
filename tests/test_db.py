@@ -24,3 +24,16 @@ def test_init_db_command(runner, monkeypatch):
     result = runner.invoke(args=["init-db"])
     assert "Initialized" in result.output
     assert Recorder.called
+
+@pytest.mark.parametrize(("username","password","message"),
+    (("test","test","created"),
+    ("","","Username required."),
+    ("test","","Password required."),
+    ("auth1","auth1","already registered"))
+)
+def test_generate_superuser_command(app,runner,username,password,message):
+    with app.app_context():
+        result = runner.invoke(args=["generate-superuser",username,password])
+    
+    assert message in result.output
+

@@ -3,59 +3,82 @@ from overload.db import get_db
 
 def test_index(client,auth):
     response = client.get("/")
-    assert b"Log In" in response.data
-    assert b"Register" in response.data
+    assert b"Log In" in response.data #test log in button appears
+    assert b"Register" in response.data # test register button appears
 
-    auth.login()
+    auth.login() # log in to auth1 user
     response = client.get("/")
-    assert b"Log Out" in response.data
-    assert b"test title" in response.data
-    assert b"by test on 2018-01-01" in response.data
-    assert b"test\nbody" in response.data
-    assert b'href="/1/update"' in response.data
+    assert b"Log Out" in response.data # assert logout button appears
+    assert b"test 1" in response.data # assert post appears
+    assert b"by auth5 on 2018-01-01" in response.data #assert byline appears
+    assert b"test\nbody" in response.data # assert body appears
+    assert b'href="/1/update"' not in response.data #assert update button doesn't appear
+
+    auth.login(username="auth5",password="auth5") #login as auth5
+    response = client.get("/")
+    assert b'href="/1/update"' in response.data # assert edit button appears for own post
+    assert b'href="/2/update"' not in response.data # assert edit button does not appear for other's posts
+
+    auth.login(username="auth10",password="auth10")
+    response = client.get("/")
+    assert b'href="/1/update"' in response.data # assert edit button appears for all posts
+    assert b'href="/2/update"' in response.data
 
 @pytest.mark.parametrize("path",(
     "/create",
     "/1/update",
     "/1/delete",
     ))
-def test_login_required(client,path):
+def test_login_required(client, path): #Checks the incoming post requests and mkaes sure that user is redirected to login page if not logged in
     response = client.post(path)
     assert response.headers["Location"] == "/auth/login"
 
-def test_author_required(app,client,auth):
-    with app.app_context():
-        db = get_db()
-        db.execute("UPDATE post SET author_id = 2 WHERE id = 1")
-        db.commit()
+@pytest.mark.parametrize(("path", "authority"),(
+    ("/create",5),
+    ("/1/update",5),
+    ("/1/delete",5),
+    ))
+def test_not_enough_authority(client, auth,path,authority): # checks incoming post requests to make sure users have enough authority
+    users = [("auth1",1),("auth5",5),("auth10",10)]
+    for user in users:
+        auth.login(username=user[0],password=user[0])
+        if user[1] < authority:
+            response = client.post(path)
+            assert response.status_code == 403
+    
 
-    auth.login()
+def test_author_required(client,auth):
 
-    assert client.post("/1/update").status_code == 403
-    assert client.post("/1/delete").status_code == 403
+    auth.login(username="auth5", password="auth5")
 
-    assert b'href="/1/update"' not in client.get("/").data
+    assert client.post("/2/update").status_code == 403
+    assert client.post("/2/delete").status_code == 403
+
+
 
 @pytest.mark.parametrize("path", (
-    "/2/update",
-    "/2/delete"
+    "/3/update",
+    "/3/delete"
 ))
 def test_exists_required(client,auth,path):
-    auth.login()
+    auth.login(username="auth5",password="auth5")
     assert client.post(path).status_code == 404
 
 
 def test_create(client, auth, app):
-    auth.login()
+    auth.login(username="auth5",password="auth5")
     assert client.get("/create").status_code == 200
     client.post("/create", data={"title": "created", "body":""})
     with app.app_context():
         db = get_db()
         count = db.execute("SELECT COUNT(id) FROM post").fetchone()[0]
-        assert count == 2
-    
-def test_update(client, auth, app):
-    auth.login()
+        assert count == 3
+
+@pytest.mark.parametrize(("username","password"),(
+    ("auth5","auth5"),
+    ("auth10","auth10")))
+def test_update(client, auth, app,username,password):
+    auth.login(username=username,password=password)
     assert client.get("/1/update").status_code == 200
     client.post("/1/update", data={"title":"updated","body":""})
 
@@ -69,12 +92,15 @@ def test_update(client, auth, app):
     "/1/update",
 ))
 def test_create_update_validate(client, auth, path):
-    auth.login()
+    auth.login(username="auth5",password="auth5")
     response = client.post(path, data={"title":"","body":""})
     assert b"Title is required." in response.data
 
-def test_delete(client,auth,app):
-    auth.login()
+@pytest.mark.parametrize(("username","password"),(
+    ("auth5","auth5"),
+    ("auth10","auth10")))
+def test_delete(client,auth,app,username,password):
+    auth.login(username=username,password=password)
     response = client.post("/1/delete")
     assert response.headers["Location"] == "/"
 

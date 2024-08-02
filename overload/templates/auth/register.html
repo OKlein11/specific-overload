@@ -10,6 +10,10 @@
     <input name="username" id="username" required>
     <label for="password">Password</label>
     <input type="password" name="password" id="password" required>
+    {% if not g.user == None and  g.user["authority"] >= 10 %}
+    <label for="authority">Authority</label>
+    <input type="number" name="authority" id="authority">
+    {% endif%}
     <input type="submit" value="Register">
   </form>
 {% endblock %}
