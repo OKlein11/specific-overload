@@ -68,7 +68,7 @@ def test_login_validate_input(auth,username,password,message): # Tests that bad 
     response = auth.login(username,password)
     assert message in response.data
 
-def test_logout(client,auth):
+def test_logout(client,auth): # Tests the logout function
     auth.login()
 
     with client:

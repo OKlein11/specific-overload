@@ -47,7 +47,7 @@ def test_not_enough_authority(client, auth,path,authority): # checks incoming po
             assert response.status_code == 403
     
 
-def test_author_required(client,auth):
+def test_author_required(client,auth): # Tests to make sure you musts be the author of the post to update and delete it
 
     auth.login(username="auth5", password="auth5")
 
@@ -60,12 +60,12 @@ def test_author_required(client,auth):
     "/3/update",
     "/3/delete"
 ))
-def test_exists_required(client,auth,path):
+def test_exists_required(client,auth,path): # Tests to make sure requests for posts that do not exist return 404s
     auth.login(username="auth5",password="auth5")
     assert client.post(path).status_code == 404
 
 
-def test_create(client, auth, app):
+def test_create(client, auth, app): # Tests whether the /create page works
     auth.login(username="auth5",password="auth5")
     assert client.get("/create").status_code == 200
     client.post("/create", data={"title": "created", "body":""})
@@ -77,7 +77,7 @@ def test_create(client, auth, app):
 @pytest.mark.parametrize(("username","password"),(
     ("auth5","auth5"),
     ("auth10","auth10")))
-def test_update(client, auth, app,username,password):
+def test_update(client, auth, app,username,password): # Tests whether the update page works for both the owner and an auth10
     auth.login(username=username,password=password)
     assert client.get("/1/update").status_code == 200
     client.post("/1/update", data={"title":"updated","body":""})
@@ -91,7 +91,7 @@ def test_update(client, auth, app,username,password):
     "/create",
     "/1/update",
 ))
-def test_create_update_validate(client, auth, path):
+def test_create_update_validate(client, auth, path): # Tests to make sure not having a title throws the correct error
     auth.login(username="auth5",password="auth5")
     response = client.post(path, data={"title":"","body":""})
     assert b"Title is required." in response.data
@@ -99,7 +99,7 @@ def test_create_update_validate(client, auth, path):
 @pytest.mark.parametrize(("username","password"),(
     ("auth5","auth5"),
     ("auth10","auth10")))
-def test_delete(client,auth,app,username,password):
+def test_delete(client,auth,app,username,password): # Tests to make sure the delete page works for the author and an auth10
     auth.login(username=username,password=password)
     response = client.post("/1/delete")
     assert response.headers["Location"] == "/"

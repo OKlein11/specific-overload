@@ -3,7 +3,7 @@ import sqlite3
 import pytest
 from overload.db import get_db
 
-def test_get_close(app):
+def test_get_close(app): # Tests whether the db closes after requests
     with app.app_context():
         db = get_db()
         assert db is get_db()
@@ -13,7 +13,7 @@ def test_get_close(app):
     
     assert "closed" in str(e.value)
 
-def test_init_db_command(runner, monkeypatch):
+def test_init_db_command(runner, monkeypatch): # Tests the cli command to initialize the db
     class Recorder(object):
         called = False
     
@@ -31,7 +31,7 @@ def test_init_db_command(runner, monkeypatch):
     ("test","","Password required."),
     ("auth1","auth1","already registered"))
 )
-def test_generate_superuser_command(app,runner,username,password,message):
+def test_generate_superuser_command(app,runner,username,password,message): # Tests the cli command to make a superuser
     with app.app_context():
         result = runner.invoke(args=["generate-superuser",username,password])
     
