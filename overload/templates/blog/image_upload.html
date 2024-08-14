@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block header%}
+<h1>{% block title%}Image Upload{% endblock %}</h1>
+{% endblock %}
+{# This template is used to upload images into the database. As you put images into the file, more spaces for images are loaded thanks to static/image_upload.js#}
+{% block content%}
+<script src= {{url_for("static",filename="image_upload.js")}} type="text/javascript"></script>
+<form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <div id="div_1">
+            <input type="file" name="image_1" id="image_1" class="imageUpload"  onchange="uploadFile(this)">
+            <input type="text" name="name_1" id="name_1">
+            <input type="text" name="alt_1" id="alt_1">
+            <img id="preview_1", width="200">
+        </div>
+    <input type="submit" id="submitButton">
+</form>
+{% endblock%}

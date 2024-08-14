@@ -1,3 +1,4 @@
+from email.mime import image
 import os
 import tempfile
 
@@ -8,13 +9,18 @@ from overload.db import get_db, init_db
 with open(os.path.join(os.path.dirname(__file__), "data.sql"), "rb") as f:
     _data_sql = f.read().decode("utf8")
 
+images_path = tempfile.mkdtemp()
+with open(os.path.join(images_path, "test.png"), "wb") as f:
+    f.write(b"testing data")
+
 @pytest.fixture
 def app():
     db_fd, db_path = tempfile.mkstemp()
 
     app = create_app({
         "TESTING": True,
-        "DATABASE": db_path
+        "DATABASE": db_path,
+        "IMAGE_UPLOAD": images_path
     })
 
     with app.app_context():

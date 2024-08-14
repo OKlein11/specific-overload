@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{# This template is a simple template that has every image along with their name and id#}
+{% block header %}
+<h1>{% block title%}Image Gallery{% endblock%}</h1>
+{% endblock%}
+
+{% block content%}
+{% for image in images %}
+<div>
+    <img width=200 src='{{ url_for("blog.get_image", id=image["id"]) }}' alt="{{image['alt_text']}}"><br>
+    {{image["name"]}}<br>
+    {{image["id"]}}
+    <hr>
+</div>
+{% endfor %}
+{% endblock%}

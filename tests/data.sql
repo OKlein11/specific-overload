@@ -8,3 +8,7 @@ INSERT INTO post (title, body, author_id, created)
 VALUES
   ('test 1', 'test', 2, '2018-01-01 00:00:00'),
   ('test 2', 'test' || x'0a' || 'body', 3, '2018-01-02 00:00:00');
+
+INSERT INTO image (name, uploader_id, alt_text)
+VALUES
+  ('test.png', 2, 'testing');

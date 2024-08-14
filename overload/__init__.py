@@ -1,5 +1,6 @@
 import os
 
+
 from flask import Flask
 
 def create_app(test_config=None):
@@ -7,7 +8,8 @@ def create_app(test_config=None):
     app = Flask(__name__,instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY="dev",
-        DATABASE=os.path.join(app.instance_path,"specific_overload.sqlite")
+        DATABASE=os.path.join(app.instance_path,"specific_overload.sqlite"),
+        IMAGE_UPLOAD=os.path.join(app.instance_path, "images")
     ) # always load the dev config
 
     if test_config is None:
@@ -19,9 +21,13 @@ def create_app(test_config=None):
 
     try:
         os.makedirs(app.instance_path) # makes sure the instance folder for the app exists
-
     except OSError:
         pass # pass if the path aleady exists
+
+    try: # Tries to make sure the folder for image uploads exists
+        os.makedirs(app.config["IMAGE_UPLOAD"])
+    except OSError:
+        pass
 
     @app.route("/hello")
     def hello(): # A simple routing to a hello world, note to self, add exlosions and sound effects to this page
@@ -38,4 +44,3 @@ def create_app(test_config=None):
     app.add_url_rule("/",endpoint="index")
 
     return app
-

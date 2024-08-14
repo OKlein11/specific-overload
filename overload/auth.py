@@ -6,6 +6,8 @@ from flask import (
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from bleach import clean
+
 from overload.db import get_db, create_user
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -27,6 +29,8 @@ def register():
                 error = "Username is required."
             elif not password:
                 error = "Password is required."
+            elif username != clean(username): # If the username is not the same when it's cleaned, it's not allowed
+                error = "Username is not allowed. Please choose another."
 
             
             elif authority > 1 and (g.user is None or g.user["authority"] < 10): # If the requested authority is greated than 1 and the user is not logged in or not a superuser

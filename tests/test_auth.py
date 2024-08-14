@@ -36,6 +36,7 @@ def test_register(client,app,auth):
     (("","",None,b"Username is required."),
     ("a","",None,b"Password is required."),
     ("a","a",5,b"You do not have authority to create this user."),
+    ("<script>","test",None,b"Username is not allowed. Please choose another."),
     ("auth1","auth1",None, b"already registered"),
 ))
 def test_register_value_input(client,username,password,authority,message): # Tests whether bad entries throw correct errors

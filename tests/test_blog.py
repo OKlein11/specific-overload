@@ -1,4 +1,6 @@
+import io
 import pytest
+import os
 from overload.db import get_db
 
 def test_index(client,auth):
@@ -11,11 +13,13 @@ def test_index(client,auth):
     assert b"Log Out" in response.data # assert logout button appears
     assert b"test 1" in response.data # assert post appears
     assert b"by auth5 on 2018-01-01" in response.data #assert byline appears
-    assert b"test\nbody" in response.data # assert body appears
+    assert b"test<br />\nbody" in response.data # assert body appears
     assert b'href="/1/update"' not in response.data #assert update button doesn't appear
+    assert b'href="/create"' not in response.data
 
     auth.login(username="auth5",password="auth5") #login as auth5
     response = client.get("/")
+    assert b'href="/create"' in response.data
     assert b'href="/1/update"' in response.data # assert edit button appears for own post
     assert b'href="/2/update"' not in response.data # assert edit button does not appear for other's posts
 
@@ -37,6 +41,7 @@ def test_login_required(client, path): #Checks the incoming post requests and mk
     ("/create",5),
     ("/1/update",5),
     ("/1/delete",5),
+    ("/image_upload",5)
     ))
 def test_not_enough_authority(client, auth,path,authority): # checks incoming post requests to make sure users have enough authority
     users = [("auth1",1),("auth5",5),("auth10",10)]
@@ -108,3 +113,88 @@ def test_delete(client,auth,app,username,password): # Tests to make sure the del
         db = get_db()
         post = db.execute("SELECT * FROM post WHERE id = 1").fetchone()
         assert post is None
+
+def test_posts(client):
+    response = client.get("/posts/1")
+    assert b"test" in response.data
+
+
+@pytest.mark.parametrize(("path","id"), (
+    ("/create",3),
+    ("/1/update",1),
+))
+def test_data_cleaning_input(client,auth, app,path,id):
+    auth.login(username="auth5",password="auth5")
+    client.post(path, data={"title":"<script>","body":"<script>"})
+
+    with app.app_context():
+        db= get_db()
+        post = db.execute(f"SELECT * FROM post WHERE id={id}").fetchone()
+        assert "<script>" not in post["title"]
+        assert "<script>" not in post["body"]
+
+@pytest.mark.parametrize("path",(
+    "/",
+    "/posts/3"
+))
+def test_data_cleaning_output(client,app,auth,path):
+    auth.login(username="auth5",password="auth5")
+    with app.app_context():
+        db= get_db()
+        db.execute("INSERT INTO post (title,body,author_id) VALUES (?,?,?)", ("<script></script>","<script></script>",2))
+        db.commit()
+    
+    response = client.get(path)
+    assert b"<script></script>" not in response.data
+    assert b"<script></script>" not in response.data
+
+def test_image_upload_page(client,auth):
+    auth.login(username="auth5",password="auth5")
+    response = client.get("/image_upload")
+    assert b'<div id="div_1">' in response.data
+    
+
+def test_image_upload(client,auth, app):
+    auth.login(username="auth5",password="auth5")
+    response = client.post("/image_upload", data={"image_1":(io.BytesIO(b"Testing"), "testing.png"), "name_1":"testing","alt_1":"testing","image_2":(io.BytesIO(b""), "")}, content_type="multipart/form-data")
+    assert b'<div class="flash">' not in response.data
+    with app.app_context():
+        db = get_db()
+        db_response = db.execute("SELECT * FROM image WHERE id=2").fetchone()
+        assert os.path.exists(os.path.join(app.config["IMAGE_UPLOAD"], "testing.png"))
+        assert db_response["name"] == "testing.png"
+
+def test_image_upload_multiple_inputs(client,auth,app):
+    auth.login(username="auth5",password="auth5")
+    response = client.post("/image_upload", data={"image_1":(io.BytesIO(b"Testing"), "testing.png"), "name_1":"test1","alt_1":"testing","image_2":(io.BytesIO(b"Testing"), "test2.png"), "name_2":"test2","alt_2":"test2","image_3":(io.BytesIO(b""), "")}, content_type="multipart/form-data")
+    assert b'<div class="flash">' not in response.data
+    with app.app_context():
+        db = get_db()
+        db_response = db.execute("SELECT count(id) FROM image").fetchone()
+        assert db_response[0] == 3
+
+@pytest.mark.parametrize(("payload","message"),(
+        ({"image_1":(io.BytesIO(b"Test"), ""), "name_1":"testing","alt_1":"testing","image_2":(io.BytesIO(b""), "")},b"No file for upload 1."),
+        ({"image_1":(io.BytesIO(b"testing"), "test2.pdf"), "name_1":"test2","alt_1":"testing","image_2":(io.BytesIO(b"Testing"), "test.png")},b"File extenstion pdf for upload 1 not allowed."),
+        ({"image_1":(io.BytesIO(b"testing"), "test3.png"), "name_1":"","alt_1":"testing","image_2":(io.BytesIO(b""), "")},b"No name for upload 1."),
+        ({"image_1":(io.BytesIO(b"Testing"), 'test.png'), "name_1":"test","alt_1":"testing","image_2":(io.BytesIO(b""), "")}, b"Upload 1 name test.png already exists."),
+    )
+)
+def test_image_upload_value_inputs(client,auth,payload,message):
+    auth.login(username="auth5",password="auth5")
+
+    response = client.post("/image_upload", data=payload, content_type="multipart/form-data")
+    print(response.data)
+    assert message in response.data
+
+
+def test_image_page(client):
+    response = client.get("/image/1")
+    assert response.data == b"testing data"
+
+
+def test_image_gallery(client,auth):
+    auth.login(username="auth5",password="auth5")
+    response = client.get("/images")
+    assert b"/image/1" in response.data
+
