@@ -106,3 +106,9 @@ def login_required(authority=1):
         
         return wrapped_view
     return inner_decorator
+
+
+@login_required
+@bp.route("/account", methods=["GET"])
+def account_page():
+    return render_template("auth/account.html")

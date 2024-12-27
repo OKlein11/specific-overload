@@ -173,7 +173,7 @@ def image_upload(): # This endpoint allows you to upload images,
 
             except db.IntegrityError:
                 error.append(f"Upload {num} name {filename} already exists.")
-
+                
             num += 1
 
         if error == []:

@@ -7,8 +7,7 @@
     <h1> <a href="/">Specific Overload </a></h1>
     <ul>
         {% if g.user %}
-            <li><span>{{g.user["username"]}}</span>
-            <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+            <li><a href="{{url_for('auth.account_page')}}""><span id="logged_in_user_nav">{{g.user["username"]}}</span></a>
             {% if g.user["authority"] >= 5 %}
                 <li><a href="{{ url_for('blog.image_upload') }}">Image Upload</a>
             {% endif%}
