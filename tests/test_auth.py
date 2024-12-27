@@ -1,4 +1,3 @@
-from urllib import response
 import pytest
 from flask import g, session
 from overload.db import get_db

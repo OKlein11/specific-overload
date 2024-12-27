@@ -13,7 +13,7 @@ from markupsafe import Markup
 from bleach import clean
 import os
 
-from overload.image_processing import find_and_replace_image_urls
+from overload.post_processing import find_and_replace_image_urls
 
 bp = Blueprint("blog",__name__)
 
@@ -87,6 +87,7 @@ def update(id):
     if request.method == 'POST':
         title = clean(request.form['title'])
         body = clean(request.form['body'])
+        body = find_and_replace_image_urls(body)
         error = None
 
         if not title:

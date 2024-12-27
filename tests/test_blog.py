@@ -184,7 +184,6 @@ def test_image_upload_value_inputs(client,auth,payload,message):
     auth.login(username="auth5",password="auth5")
 
     response = client.post("/image_upload", data=payload, content_type="multipart/form-data")
-    print(response.data)
     assert message in response.data
 
 

@@ -1,4 +1,4 @@
-from overload.image_processing import find_and_replace_image_urls
+from overload.post_processing import find_and_replace_image_urls
 import pytest
 
 @pytest.mark.parametrize(("given","result"),(
