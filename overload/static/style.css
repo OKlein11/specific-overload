@@ -1,14 +1,14 @@
-html { font-family: "Helvetica", "Arial", sans-serif; background: #ECEFF4; padding: 1rem; color: #2E3440;}
-body { max-width: 960px; margin: 0 auto; background: #E5E9F0; }
+html { font-family: "Helvetica", "Arial", sans-serif; background: #D8DEE9; padding: 1rem; color: #2E3440;}
+body { max-width: 960px; margin: 0 auto; background: #D8DEE9;  border-radius: 20px;}
 h1 {color: #5E81AC; margin: 1rem 0; }
 a { color: #5E81AC; }
 hr { border: none; border-top: 1px solid #D8DEE9; }
-nav { background: #D8DEE9; display: flex; align-items: center; padding: 0 0.5rem; }
+nav { background: #ECEFF4; display: flex; align-items: center; padding: 0 0.5rem; border-radius: 20px; margin-bottom: 10px; border:2px solid #2e3440; }
 nav h1 { flex: auto; margin: 0; }
 nav h1 a { text-decoration: none; padding: 0.25rem 0.5rem;}
 nav ul  { display: flex; list-style: none; margin: 0; padding: 0; }
 nav ul li a, nav ul li span, header .action { display: flex; padding: 0.5rem}
-.content { padding: 0 1rem 1rem; }
+.content { padding: 0 1rem 1rem; border-radius: 20px; background-color: #ECEFF4; border:2px solid #2e3440;}
 .content > header { border-bottom: 1px solid lightgray; display: flex; align-items: flex-end; }
 .content > header h1 { flex: auto; margin: 1rem 0 0.25rem 0; }
 .flash { margin: 1em 0; padding: 1em; background: #cae6f6; border: 1px solid #377ba8; }
